@@ -76,17 +76,17 @@ int main(int argc, char** argv)
   // of the robot. We will set all joints in the state to their
   // default values. We can then get a
   // :moveit_core:`JointModelGroup`, which represents the robot
-  // model for a particular group, e.g. the "panda_arm" of the Panda
+  // model for a particular group, e.g. the "manipulator" of the UR5
   // robot.
   robot_state::RobotStatePtr kinematic_state(new robot_state::RobotState(kinematic_model));
   kinematic_state->setToDefaultValues();
-  const robot_state::JointModelGroup* joint_model_group = kinematic_model->getJointModelGroup("panda_arm");
+  const robot_state::JointModelGroup* joint_model_group = kinematic_model->getJointModelGroup("manipulator");
 
   const std::vector<std::string>& joint_names = joint_model_group->getVariableNames();
 
   // Get Joint Values
   // ^^^^^^^^^^^^^^^^
-  // We can retreive the current set of joint values stored in the state for the Panda arm.
+  // We can retreive the current set of joint values stored in the state for the UR5 arm.
   std::vector<double> joint_values;
   kinematic_state->copyJointGroupPositions(joint_model_group, joint_values);
   for (std::size_t i = 0; i < joint_names.size(); ++i)
@@ -97,7 +97,7 @@ int main(int argc, char** argv)
   // Joint Limits
   // ^^^^^^^^^^^^
   // setJointGroupPositions() does not enforce joint limits by itself, but a call to enforceBounds() will do it.
-  /* Set one joint in the Panda arm outside its joint limit */
+  /* Set one joint in the UR5 arm outside its joint limit */
   joint_values[0] = 5.57;
   kinematic_state->setJointGroupPositions(joint_model_group, joint_values);
 
@@ -112,10 +112,10 @@ int main(int argc, char** argv)
   // ^^^^^^^^^^^^^^^^^^
   // Now, we can compute forward kinematics for a set of random joint
   // values. Note that we would like to find the pose of the
-  // "panda_link8" which is the most distal link in the
-  // "panda_arm" group of the robot.
+  // "ee_link" which is the most distal link in the
+  // "manipulator" group of the robot.
   kinematic_state->setToRandomPositions(joint_model_group);
-  const Eigen::Isometry3d& end_effector_state = kinematic_state->getGlobalLinkTransform("panda_link8");
+  const Eigen::Isometry3d& end_effector_state = kinematic_state->getGlobalLinkTransform("ee_link");
 
   /* Print end-effector pose. Remember that this is in the model frame */
   ROS_INFO_STREAM("Translation: \n" << end_effector_state.translation() << "\n");
@@ -123,10 +123,10 @@ int main(int argc, char** argv)
 
   // Inverse Kinematics
   // ^^^^^^^^^^^^^^^^^^
-  // We can now solve inverse kinematics (IK) for the Panda robot.
+  // We can now solve inverse kinematics (IK) for the UR5 robot.
   // To solve IK, we will need the following:
   //
-  //  * The desired pose of the end-effector (by default, this is the last link in the "panda_arm" chain):
+  //  * The desired pose of the end-effector (by default, this is the last link in the "manipulator" chain):
   //    end_effector_state that we computed in the step above.
   //  * The timeout: 0.1 s
   double timeout = 0.1;
